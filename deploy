@@ -1,18 +1,19 @@
 #!/usr/bin/env php
 <?php
 
+
 date_default_timezone_set('America/Chicago');
 $base_dir = __DIR__;
+$option = isset($argv[1]) ? $argv[1] : null;
 
 #--------------------------------------------------------------------------
 # Configuration
 #--------------------------------------------------------------------------
 
-$repo = 'git@github.com:paulboco/peon.git';
+$repo = 'https://github.com/paulboco/peon.git';
 $release_dir = $base_dir . '/releases/';
 $deploy_dir = $base_dir . '/current/';
-$release = 'release_' . date('YmdHis');
-$release = 'release_20151112143206';
+$release = $option ? $release = 'release_20151112171824' : 'release_' . date('YmdHis');
 
 $env = <<<EOD
 <?php
@@ -24,8 +25,10 @@ putenv('DB_PASS=root');
 EOD;
 
 chdir($base_dir);
-// exec("git clone --depth 1 {$repo} {$release_dir}{$release}");
+if ($option != 'test') {
+    exec("git clone --depth 1 {$repo} {$release_dir}{$release}");
+}
 chdir($release_dir . $release);
 file_put_contents('.env', $env);
-// exec("php clid seed");
+exec("php clid seed");
 exec("ln -sfn {$release_dir}{$release}/public {$deploy_dir}");
