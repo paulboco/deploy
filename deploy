@@ -2,16 +2,17 @@
 <?php
 
 date_default_timezone_set('America/Chicago');
+$base_dir = __DIR__;
 
 #--------------------------------------------------------------------------
 # Configuration
 #--------------------------------------------------------------------------
 
-$repo = 'https://github.com/paulboco/peon';
-$release_dir = '/vagrant/releases/';
-$deploy_dir = '/vagrant/current/';
+$repo = 'git@github.com:paulboco/peon.git';
+$release_dir = $base_dir . '/releases/';
+$deploy_dir = $base_dir . '/current/';
 $release = 'release_' . date('YmdHis');
-$release = 'release_20151112123017';
+$release = 'release_20151112143206';
 
 $env = <<<EOD
 <?php
@@ -22,11 +23,9 @@ putenv('DB_PASS=root');
 
 EOD;
 
-chdir('/vagrant');
-exec("git clone --depth 1 {$repo} {$release_dir}{$release}");
+chdir($base_dir);
+// exec("git clone --depth 1 {$repo} {$release_dir}{$release}");
 chdir($release_dir . $release);
 file_put_contents('.env', $env);
-exec('ls -la', $output);
-var_dump($output);
-exec("php clid seed");
-#ln -sfn source_file_or_directory_name softlink_name
+// exec("php clid seed");
+exec("ln -sfn {$release_dir}{$release}/public {$deploy_dir}");
