@@ -1,0 +1,32 @@
+#!/usr/bin/env php
+<?php
+
+date_default_timezone_set('America/Chicago');
+
+#--------------------------------------------------------------------------
+# Configuration
+#--------------------------------------------------------------------------
+
+$repo = 'https://github.com/paulboco/peon';
+$release_dir = '/vagrant/releases/';
+$deploy_dir = '/vagrant/current/';
+$release = 'release_' . date('YmdHis');
+$release = 'release_20151112123017';
+
+$env = <<<EOD
+<?php
+
+putenv('DB_DSN=mysql:host=localhost;dbname=peon');
+putenv('DB_USER=root');
+putenv('DB_PASS=root');
+
+EOD;
+
+chdir('/vagrant');
+exec("git clone --depth 1 {$repo} {$release_dir}{$release}");
+chdir($release_dir . $release);
+file_put_contents('.env', $env);
+exec('ls -la', $output);
+var_dump($output);
+exec("php clid seed");
+#ln -sfn source_file_or_directory_name softlink_name
