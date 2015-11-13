@@ -1,8 +1,11 @@
+#!/usr/bin/env php
 <?php
 
-require_once __DIR__.'/vendor/autoload.php';
+require __DIR__.'/vendor/autoload.php';
 
-use Symfony\Component\Console as Console;
+use App\Console\Command\GreetCommand;
+use Symfony\Component\Console\Application;
 
-$application = new Console\Application('Demo', '1.0.0');
+$application = new Application();
+$application->add(new GreetCommand());
 $application->run();
