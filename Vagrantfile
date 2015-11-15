@@ -1,20 +1,31 @@
-# -*- mode: ruby -*-
-# vi: set ft=ruby :
+require 'json'
+require 'yaml'
 
-Vagrant.configure("2") do |config|
+VAGRANTFILE_API_VERSION ||= "2"
+confDir = $confDir ||= File.expand_path("vendor/laravel/homestead", File.dirname(__FILE__))
 
-  config.vm.box = "lamp53"
-  config.vm.hostname = "lamp53"
-  config.vm.network "private_network", ip: "192.168.33.10"
-  config.vm.synced_folder ".", "/vagrant", :mount_options => ["dmode=777", "fmode=666"]
+homesteadYamlPath = "Homestead.yaml"
+homesteadJsonPath = "Homestead.json"
+afterScriptPath = "after.sh"
+aliasesPath = "aliases"
 
-  # set auto_update to false, if you do NOT want to check the correct
-  # additions version when booting this machine
-  config.vbguest.auto_update = false
+require File.expand_path(confDir + '/scripts/homestead.rb')
 
-  # do NOT download the iso file from a webserver
-  config.vbguest.no_remote = true
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+    # To avoid install and uninstall VBoxGuessAdditions during vagrant provisioning.
+    config.vbguest.auto_update = false
 
-  config.vm.provision "shell", path: "Vagrantscript.sh"
+    if File.exists? aliasesPath then
+        config.vm.provision "file", source: aliasesPath, destination: "~/.bash_aliases"
+    end
 
+    if File.exists? homesteadYamlPath then
+        Homestead.configure(config, YAML::load(File.read(homesteadYamlPath)))
+    elsif File.exists? homesteadJsonPath then
+        Homestead.configure(config, JSON.parse(File.read(homesteadJsonPath)))
+    end
+
+    if File.exists? afterScriptPath then
+        config.vm.provision "shell", path: afterScriptPath
+    end
 end

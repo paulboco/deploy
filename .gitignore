@@ -1,3 +1,4 @@
 .vagrant
-release_*
+/current/
+/releases/
 /vendor/
