@@ -12,7 +12,8 @@ keys:
     - ~/.ssh/id_rsa
 
 folders:
-    - map: "/home/paulboco/Code/deploy"
+    # - map: "/home/paulboco/Code/deploy"
+    - map: "C:/Users/paulboco/Code/deploy"
       to: "/home/vagrant/Code/deploy"
 
 sites:
@@ -21,9 +22,6 @@ sites:
 
     - map: foo.app
       to: "/home/vagrant/Code/deploy/current/paulboco/foo/public"
-
-    - map: peon.app
-      to: "/home/vagrant/Code/deploy/current/paulboco/peon/public"
 
 databases:
     - peon
