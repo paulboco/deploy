@@ -19,6 +19,9 @@ sites:
     - map: simple-index.app
       to: "/home/vagrant/Code/deploy/current/paulboco/simple-index/public"
 
+    - map: foo.app
+      to: "/home/vagrant/Code/deploy/current/paulboco/foo/public"
+
     - map: peon.app
       to: "/home/vagrant/Code/deploy/current/paulboco/peon/public"
 

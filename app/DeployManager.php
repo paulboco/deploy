@@ -2,10 +2,13 @@
 
 namespace App;
 
+use Symfony\Component\Process\Process;
+use Symfony\Component\Process\Exception\ProcessFailedException;
+
 class DeployManager
 {
     /**
-     * The App Base Directory
+     * The app base directory.
      *
      * @var string
      */
@@ -19,65 +22,58 @@ class DeployManager
     private $releaseName;
 
     /**
-     * The Release Prefix
+     * The release prefix.
      *
      * @var string
      */
     private $releasePrefix = 'active_release_';
 
     /**
-     * The Release Base Directory
+     * The release base directory.
      *
      * @var string
      */
     private $releaseBaseDir = '/releases/';
 
     /**
-     * The Deploy Directory
+     * The deploy directory.
      *
      * @var string
      */
     private $deployDir = '/current/';
 
     /**
+     * The date format.
+     *
+     * @var string
+     */
+    private $dateFormat = 'YmdHis';
+
+    /**
      * Create a new DeployManager
      *
-     * @param  string  $baseDir
+     * @return void
      */
-    public function __construct($baseDir)
+    public function __construct()
     {
-        $this->baseDir = $baseDir;
+        $this->baseDir = realpath(__DIR__ . '/../');
     }
 
     /**
-     * Get The Release Name
+     * Deploy the repository.
      *
      * @param  string  $repository
-     * @return string
+     * @return boolean
      */
-    public function getReleaseName($repository)
+    public function deploy($repository)
     {
-        if ($this->releaseName) {
-            return $this->releaseName;
-        }
-
-        $this->releaseName = $this->releasePrefix . date('YmdHis');
-
-        return $this->releaseName;
+        $this->makeDeployDir($repository, true);
+        $this->makeDeployLink($repository);
+        return 1;
     }
 
     /**
-     * Get The Release Base Directory
-     *
-     * @return string
-     */
-    public function getReleaseBaseDir()
-    {
-        return $this->baseDir . $this->releaseBaseDir;
-    }
-
-    /**
-     * Get The Release Directory
+     * Get the release directory.
      *
      * @param  string  $repository
      * @return string
@@ -90,48 +86,7 @@ class DeployManager
     }
 
     /**
-     * Get The Deploy Directory
-     *
-     * @param  string  $repository
-     * @return string
-     */
-    public function getDeployDir($repository)
-    {
-        return $this->baseDir . $this->deployDir . $repository;
-    }
-
-    /**
-     * Make The Deploy Directory
-     *
-     * @param  string  $repository
-     * @param  boolean  $force
-     * @return void
-     */
-    public function makeDeployDir($repository, $force = false)
-    {
-        $directory = $this->getDeployDir($repository);
-
-        @mkdir($directory, 0755, true);
-    }
-
-    /**
-     * Make Deploy Link
-     *
-     * @param  string  $repository
-     * @return boolean
-     */
-    public function makeDeployLink($repository)
-    {
-        $releaseDir = $this->getReleaseDir($repository);
-        $deployDir = $this->getDeployDir($repository);
-
-        exec("ln -nfs {$releaseDir}/public {$deployDir}", $null, $code);
-
-        return !$code;
-    }
-
-    /**
-     * Get The Old Releases
+     * Get the old releases.
      *
      * @param  string  $repository
      * @return array
@@ -144,7 +99,7 @@ class DeployManager
     }
 
     /**
-     * Deactivate The Old Releases
+     * Deactivate the old releases.
      *
      * @param  array  $releases
      * @return void
@@ -154,5 +109,67 @@ class DeployManager
         foreach ($releases as $release) {
             rename($release, str_replace('active_', '', $release));
         }
+    }
+
+    /**
+     * Get the deploy directory.
+     *
+     * @param  string  $repository
+     * @return string
+     */
+    private function getDeployDir($repository)
+    {
+        return $this->baseDir . $this->deployDir . $repository;
+    }
+
+    /**
+     * Make the deploy directory.
+     *
+     * @param  string  $repository
+     * @param  boolean  $force
+     * @return void
+     */
+    private function makeDeployDir($repository, $force = false)
+    {
+        $directory = $this->getDeployDir($repository);
+
+        @mkdir($directory, 0755, true);
+    }
+
+    /**
+     * Make deploy link.
+     *
+     * @param  string  $repository
+     * @return boolean
+     */
+    private function makeDeployLink($repository)
+    {
+        $releaseDir = $this->getReleaseDir($repository);
+        $deployDir = $this->getDeployDir($repository);
+
+        $process = new Process("ln -nfs {$releaseDir}/public {$deployDir}");
+
+        $process->run();
+
+        if (!$process->isSuccessful()) {
+            throw new ProcessFailedException($process);
+        }
+    }
+
+    /**
+     * Get the release name.
+     *
+     * @param  string  $repository
+     * @return string
+     */
+    private function getReleaseName($repository)
+    {
+        if ($this->releaseName) {
+            return $this->releaseName;
+        }
+
+        $this->releaseName = $this->releasePrefix . date($this->dateFormat);
+
+        return $this->releaseName;
     }
 }

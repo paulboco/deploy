@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Console\Command;
+namespace App\Console\Commands;
 
 use App\DeployManager;
 use App\Github;
-use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
@@ -68,36 +68,18 @@ class DeployRepoCommand extends Command
         $destination = $this->manager->getReleaseDir($repository);
         $oldReleases = $this->manager->getOldReleases($repository);
 
-        if (!$this->github->hasRepo($repository)) {
-            $output->writeln("<error>Repository {$repository} not found</error>");
-            return;
-        }
-
-        if ($this->github->cloneRepo($repository, $destination)) {
-            $output->writeln("<info>Repository {$repository} was cloned successfully</info>");
-        } else {
+        if (!$this->github->cloneRepo($repository, $destination)) {
             $output->writeln("<error>Repository {$repository} did not clone successfully");
-            return;
+            return 1;
         }
 
-        if ($this->deploy($repository)) {
-            $this->manager->deactivateOldReleases($oldReleases);
-            $output->writeln("<info>Repository {$repository} was deployed successfully</info>");
-        } else {
+        if (!$this->manager->deploy($repository )) {
             $output->writeln("<error>Repository {$repository} was not deployed due to unknown error</error>");
+            return 1;
         }
-    }
 
-    /**
-     * Deploy The Repository
-     *
-     * @param  string  $repository
-     * @return boolean
-     */
-    private function deploy($repository)
-    {
-        $this->manager->makeDeployDir($repository, true);
-
-        return $this->manager->makeDeployLink($repository);
+        $this->manager->deactivateOldReleases($oldReleases);
+        $output->writeln("<info>Repository {$repository} was deployed successfully</info>");
+        return 0;
     }
 }

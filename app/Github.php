@@ -2,26 +2,33 @@
 
 namespace App;
 
+use Symfony\Component\Process\Process;
+use Symfony\Component\Process\Exception\ProcessFailedException;
+
 class Github
 {
-    private $test = true;
+    private $repoMask = 'git@github.com:%s.git';
 
     /**
-     * Check Github Repository Existance
+     * Check Github Repository Existence
      *
      * @param  string  $repository
      * @return boolean
      */
-    public function hasRepo($repository)
-    {
-        if ($this->test) {
-            $location = 'https://github.com/' . $repository . '/archive/master.zip';
-            return strpos(get_headers($location)[0], '404') === false;
-        } else {
-            exec("git ls-remote git@github.com:{$repository}.git", $void, $code);
-            return !$code;
-        }
-    }
+    // public function hasRepo($repository)
+    // {
+    //     $location = sprintf($this->repoMask, $repository);
+    //     $command = "git ls-remote {$location}";
+    //     $process = new Process($command, $_SERVER['HOME'], array_merge($_SERVER, $_ENV));
+
+    //     $process->run();
+
+    //     if (!$process->isSuccessful()) {
+    //         throw new ProcessFailedException($process);
+    //     }
+
+    //     return 1;
+    // }
 
     /**
      * Clone A Github Repository
@@ -32,10 +39,16 @@ class Github
      */
     public function cloneRepo($repository, $destination)
     {
-        $repository = "https://github.com/{$repository}.git";
+        $location = sprintf($this->repoMask, $repository);
 
-        exec("git clone --depth 1 {$repository} {$destination}", $null, $code);
+        $process = new Process("git clone --depth 1 {$location} {$destination}");
 
-        return !$code;
+        $process->run();
+
+        if (!$process->isSuccessful()) {
+            throw new ProcessFailedException($process);
+        }
+
+        return 1;
     }
 }
