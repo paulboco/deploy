@@ -12,16 +12,16 @@ keys:
     - ~/.ssh/id_rsa
 
 folders:
-    # - map: "/home/paulboco/Code/deploy"
-    - map: "C:/Users/paulboco/Code/deploy"
-      to: "/home/vagrant/Code/deploy"
+    - map: "/home/paulboco/github/deploy"
+    # - map: "C:/Users/paulboco/github/deploy"
+      to: "/home/vagrant/github/deploy"
 
 sites:
     - map: simple-index.app
-      to: "/home/vagrant/Code/deploy/current/paulboco/simple-index/public"
+      to: "/home/vagrant/github/deploy/current/paulboco/simple-index/public"
 
     - map: foo.app
-      to: "/home/vagrant/Code/deploy/current/paulboco/foo/public"
+      to: "/home/vagrant/github/deploy/current/paulboco/foo/public"
 
 databases:
     - peon
